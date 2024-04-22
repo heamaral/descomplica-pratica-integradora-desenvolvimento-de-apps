@@ -1,0 +1,55 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'modulo-3b/test/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'modulo-3b/test/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  prepare-and-upload:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_path: ${{ env.DIRECTORY_PATH }}
+    env:
+      DIRECTORY_PATH: 'modulo-3b/test'
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v2
+
+      - name: Build or Prepare Content
+        run: |
+          mkdir build
+          if [ -d "${DIRECTORY_PATH}" ]; then
+            rsync -av --exclude='.git' ./${DIRECTORY_PATH}/ build/
+          fi
+
+      - name: Upload Content as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: site-content
+          path: build/
+
+  deploy-to-gh-pages:
+    needs: prepare-and-upload
+    uses: ./.github/workflows/common.yml
+    with:
+      directory_path: ${{ needs.prepare-and-upload.outputs.deploy_path }}

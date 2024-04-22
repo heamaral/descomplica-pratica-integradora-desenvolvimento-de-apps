@@ -1,0 +1,60 @@
+name: Generate README
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md.jinja'
+      - 'scripts/generate_readme.py'
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+
+jobs:
+  build-readme:
+    runs-on: ubuntu-latest
+    container: 
+      image: python:3.9-slim
+    env:
+      PROJECT_NAME: Prática Integradora Desenvolvimento de Apps
+      PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+      PROJECT_DESCRIPTION: Repositório com soluções de atividades da disciplina Prática Integradora Desenvolvimento de Apps da plataforma Descomplica
+      REPOSITORY_URL: https://github.com/${{ github.repository }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Jinja2
+      run: pip install jinja2
+
+    - name: Generate README.md
+      run: python scripts/generate_readme.py
+
+    - name: Upload README.md as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: readme
+        path: README.md
+
+  commit-changes:
+    needs: build-readme
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Download README.md from artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: readme
+        path: .
+
+    - name: Configure, Commit and push if changed
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git add README.md
+        git commit -m 'Update README.md' || exit 0
+        git push

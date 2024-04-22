@@ -1,0 +1,56 @@
+name: Reusable Deployment Workflow
+
+on:
+  workflow_call:
+    inputs:
+      directory_path:
+        required: true
+        type: string
+
+jobs:
+  deploy-to-gh-pages:
+    runs-on: ubuntu-latest
+    env:
+      DIRECTORY_PATH: ${{ inputs.directory_path }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check for gh-pages branch
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          if ! git ls-remote --heads origin gh-pages | grep gh-pages; then
+            echo "gh-pages branch does not exist, creating..."
+            git checkout --orphan gh-pages
+            git rm -rf .
+            echo "" > index.html
+            git add index.html
+            git commit -m "Initial commit on gh-pages"
+            git push origin gh-pages --force
+          else
+            git checkout gh-pages
+            git pull origin gh-pages
+          fi
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+            name: site-content
+            path: temp/
+        continue-on-error: true
+
+      - name: Sync and push changes
+        run: |
+          if [ -d "temp" ]; then
+            mkdir -p ${DIRECTORY_PATH}
+            rsync -av --exclude='.git' temp/ ${DIRECTORY_PATH}/
+            rm -rf temp
+          else
+            rm -rf ${DIRECTORY_PATH}
+          fi
+          git add .
+          git commit -m "Deploy updated content to ${DIRECTORY_PATH} on GitHub Pages" || echo "No changes to commit"
+          git push origin gh-pages
