@@ -3,12 +3,12 @@ on:
     branches:
       - main
     paths:
-      - 'modulo-3b/test/**'
+      - 'test/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'modulo-3b/test/**'
+      - 'test/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
     outputs:
       deploy_path: ${{ env.DIRECTORY_PATH }}
     env:
-      DIRECTORY_PATH: 'modulo-3b/test'
+      DIRECTORY_PATH: 'test'
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v2
