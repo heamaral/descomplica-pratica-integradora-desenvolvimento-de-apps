@@ -7,3 +7,7 @@ Repositório com soluções de atividades da disciplina Prática Integradora Des
 ### Módulo 3B
 
 [Trabalhando com GitHub](https://heamaral.github.io/descomplica-pratica-integradora-desenvolvimento-de-apps/modulo-3b/trabalhando-com-github)
+
+### Test
+
+[Trabalhando com GitHub](https://heamaral.github.io/descomplica-pratica-integradora-desenvolvimento-de-apps/test)
